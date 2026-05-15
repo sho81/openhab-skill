@@ -66,44 +66,26 @@ Clawdbot receives the webhook and can notify you or take action based on the eve
 
 ## CLI Wrapper
 
-The `scripts/ha.sh` CLI provides easy access to all HA functions:
+The `scripts/oa.sh` CLI provides easy access to openHAB functions:
 
 ```bash
-# Test connection
-ha.sh info
-
 # List entities
-ha.sh list all          # all entities
-ha.sh list lights       # just lights
-ha.sh list switch       # just switches
-
-# Search entities
-ha.sh search kitchen    # find entities by name
+oa.sh list all          # all entities
+oa.sh list Switch       # just switches
+oa.sh list Dimmer       # just dimmers
 
 # Get/set state
-ha.sh state light.living_room
-ha.sh states light.living_room   # full details with attributes
-ha.sh on light.living_room
-ha.sh on light.living_room 200   # with brightness (0-255)
-ha.sh off light.living_room
-ha.sh toggle switch.fan
-
-# Scenes & scripts
-ha.sh scene movie_night
-ha.sh script goodnight
-
-# Climate
-ha.sh climate climate.thermostat 22
-
-# Call any service
-ha.sh call light turn_on '{"entity_id":"light.room","brightness":200}'
+oa.sh state LivingRoom_Light
+oa.sh attributes LivingRoom_Light   # full details with attributes
+oa.sh on LivingRoom_Light
+oa.sh off LivingRoom_Light
 ```
 
 ## Troubleshooting
 
 - **401 Unauthorized**: Token expired or invalid. Generate a new one.
-- **Connection refused**: Check HA_URL, ensure HA is running and accessible.
-- **Entity not found**: List entities to find the correct entity_id.
+- **Connection refused**: Check OPENHAB_URL, ensure openHAB is running and accessible.
+- **Entity not found**: List entities to find the correct item name.
 
 ## API Reference
 

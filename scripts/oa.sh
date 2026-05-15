@@ -55,15 +55,15 @@ case "$cmd" in
 
  
   list)
-    # List entities by domain: oa.sh list lights / oa.sh list all
+    # List entities by type: oa.sh list Switch / oa.sh list all
     filter="${1:-all}"
     if [[ "$filter" == "all" ]]; then
-      curl -s -H -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false"| jq '.[].name' | sort
+      curl -s -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false"| jq -r '.[].name' | sort
     else
       # Normalize: "lights" -> "light", "switches" -> "switch"
       filter="${filter%s}"
-      curl -s -H -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false" | jq -r --arg d "$filter" \
-        '.[] | select(.name | startswith($d + ".")) | .name' | sort
+      curl -s -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false" | jq -r --arg d "$filter" \
+        '.[] | select(.type | test($d; "i")) | .name' | sort
     fi
     ;;
 
@@ -75,17 +75,18 @@ Usage: oa.sh <command> [args...]
 
 Commands:
   state <item>              Get item state
-  attributes <item>             Get full item state with attributes
+  attributes <item>         Get full item state with attributes
   on <item>                 Turn on 
   off <item>                Turn off
+  list [type]               List items (e.g., all, Switch, Dimmer)
 
 Environment:
-  OPENHAB_URL    Home Assistant URL (required)
+  OPENHAB_URL    openHAB URL (required)
   OPENHAB_TOKEN  Long-lived access token (required)
 
 Examples:
-  oa.sh on living_room
-  oa.sh list lights
+  oa.sh on LivingRoom_Light
+  oa.sh list Switch
 EOF
     ;;
 esac
