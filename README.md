@@ -31,13 +31,14 @@ export OPENHAB_URL="http://your-openhab-instance:8080"
 export OPENHAB_TOKEN="your-long-lived-access-token"
 ```
 
-### Getting a Long-Lived Access Token
+### Getting an API Token
 
-1. Open your openHAB dashboard.
-2. Go to your **Profile** (bottom left corner).
-3. Scroll down to the **"Long-Lived Access Tokens"** section.
-4. Click **"Create Token"**, give it a name (e.g., "AI Agent").
-5. Copy the token immediately (it will only be shown once).
+1. Sign in to openHAB with your administrator username and password (bottom left).
+2. Click again on the profile button to access your profile page.
+3. Click on "Create new API token".
+4. Enter your admin username and password, fill in the token name (e.g., "AI Agent"), and select a Token Scope.
+5. Copy the complete token immediately (it will only be shown once).
+
 
 ## CLI Wrapper
 
