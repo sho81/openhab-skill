@@ -40,13 +40,12 @@ export OPENHAB_TOKEN="your-long-lived-access-token"
 ### List Entities
 
 ```bash
-curl -s -H -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false"| jq '.[].name'
+curl -s -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false" | jq '.[].name'
 ```
 
 ### Get Entity State
 Checking state of item_name
 ```bash
-
 curl -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/item_name/state"
 ```
 
@@ -57,13 +56,8 @@ curl -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: text/plain" 
 curl -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/item_name" -d 'ON'
 
 # Turn off item_name
-curl -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain"  "${OPENHAB_URL}/rest/items/item_name" -d 'ON'
-
-
-
-### 3. Handle in Clawdbot
-
-Clawdbot receives the webhook and can notify you or take action based on the event.
+curl -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/item_name" -d 'OFF'
+```
 
 ## CLI Wrapper
 
