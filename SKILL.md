@@ -1,7 +1,6 @@
 ---
 name: openhab
 description: Control openHAB smart home devices, run automations, and receive webhook events. Use when controlling lights, switches, climate, scenes, scripts, or any openHAB entity. Supports bidirectional communication via REST API (outbound) and webhooks (inbound triggers from openHAB automations).
-metadata: {"clawdbot":{"emoji":"🏠","requires":{"bins":["jq","curl"]}}}
 ---
 
 # openHAB
