@@ -59,9 +59,10 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 - **Issue:** `${item}` is pasted directly into the path (`…/rest/items/${item}/state`). openHAB item names are normally `[A-Za-z0-9_]+`, but an agent could pass `foo/../rules` or a name with spaces → wrong endpoint or broken request.
 - **Fix:** validate against `^[A-Za-z0-9_]+$` (reject otherwise) or URL-encode the segment.
 
-### M2. Token visible in local process list
-- **File:** `scripts/oa.sh:22,29,35,42,51,61,65`
+### M2. Token visible in local process list — FIXED
+- **File:** `scripts/oa.sh` (all curl calls)
 - **Category:** Security
+- **Status:** Fixed 2026-10-23 — the Authorization header is written to a mode-600 temp file (`mktemp`) and passed via `-H @"$AUTH_FILE"` on all curl calls; removed from argv, cleaned up by `trap … EXIT`. Verified: mock server receives the correct Bearer token.
 - **Issue:** `-H "Authorization: Bearer $OPENHAB_TOKEN"` puts the token into curl's argv, readable via `ps eww` / `/proc/*/cmdline` by other local users. Low impact on single-user machines, but this is an agent-facing CLI that may run unattended.
 - **Fix:** pass the header from a 0600 temp file (`curl -H @file`) or via `--config`; at minimum document the exposure.
 
@@ -90,16 +91,19 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 
 ## P2 — Low
 
-### L1. Dead code: unused `api()` function with wrong content type
-- **File:** `scripts/oa.sh:21–23`
+### L1. Dead code: unused `api()` function with wrong content type — FIXED
+- **File:** `scripts/oa.sh`
+- **Status:** Fixed 2026-10-23 — removed; each case builds its own curl call with the correct headers.
 - **Issue:** `api()` is defined but never called; it also hardcodes `Content-Type: application/json`, which would be wrong for the text/plain commands. Remove it or actually use it (with per-call headers).
 
-### L2. Copy-paste errors in comments and usage strings
-- **File:** `scripts/oa.sh:33–34, 48–49`
+### L2. Copy-paste errors in comments and usage strings — FIXED
+- **File:** `scripts/oa.sh`
+- **Status:** Fixed 2026-10-23 — the `attributes` case now says `attributes`, the `off` branch now says `off`; stray spaces in usage strings removed.
 - **Issue:** In the `attributes` case, comment says `oa.sh state living_room` and the error string says `Usage: oa.sh state <item_id>` (should be `attributes`). The `off` branch's comment/usage say `oa.sh on …` / `Usage: oa.sh on <item_id> }` (should be `off`; also stray space before `}`).
 
-### L3. Dependencies (`jq`, `curl`) not declared or checked
-- **File:** `scripts/oa.sh`
+### L3. Dependencies (`jq`, `curl`) not declared or checked — FIXED
+- **File:** `scripts/oa.sh`, `README.md`
+- **Status:** Fixed 2026-10-23 — startup loop checks both deps and exits 1 with a clear ✗ message (verified: empty PATH → "✗ required dependency 'jq' not found in PATH"); README documents the requirement.
 - **Issue:** Both are required, but nothing verifies them — the old clawdbot metadata used to declare `requires.bins`. A missing `jq` produces a confusing failure in `attributes`/`list`. Add a startup check with a clear error and/or document dependencies in README.
 
 ### L4. Documentation inconsistencies between SKILL.md and README.md — FIXED
@@ -112,11 +116,13 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 - **Issue:** "Checking state of item_name" sat between the heading and the code block — leftover from an earlier edit; reads as a broken paragraph.
 - **Status:** Fixed 2026-10-23 — fragment removed.
 
-### L6. Style nits in oa.sh
-- **File:** `scripts/oa.sh:39,43,52` (trailing whitespace), inconsistent quoting (`-X 'POST'` vs `-X POST`) throughout.
+### L6. Style nits in oa.sh — FIXED
+- **File:** `scripts/oa.sh` (trailing whitespace), inconsistent quoting (`-X 'POST'` vs `-X POST`) throughout.
+- **Status:** Fixed 2026-10-23 — trailing whitespace removed, `-X POST` quoting unified (double quotes).
 
-### L7. Repo hygiene: no LICENSE, no .gitignore
+### L7. Repo hygiene: no LICENSE, no .gitignore — FIXED
 - **File:** repo root
+- **Status:** Fixed 2026-10-23 — added MIT `LICENSE` (© 2026 Sebastian Hornbostel) and `.gitignore` (ignores the old `token` file + OS cruft).
 - **Issue:** No license file for a published skill; no `.gitignore` — the previously tracked `token` secret (see H4) shows how easily local files end up in git.
 
 ### L8. Least-privilege token guidance missing — FIXED
