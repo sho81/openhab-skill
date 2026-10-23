@@ -65,15 +65,17 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 - **Issue:** `-H "Authorization: Bearer $OPENHAB_TOKEN"` puts the token into curl's argv, readable via `ps eww` / `/proc/*/cmdline` by other local users. Low impact on single-user machines, but this is an agent-facing CLI that may run unattended.
 - **Fix:** pass the header from a 0600 temp file (`curl -H @file`) or via `--config`; at minimum document the exposure.
 
-### M3. Webhooks promised in description but no longer documented
+### M3. Webhooks promised in description but no longer documented — FIXED
 - **File:** `SKILL.md:3`, `README.md:3`
 - **Category:** Docs
+- **Status:** Fixed 2026-10-23 — added a "Webhooks (Inbound)" section to both docs (openHAB rule → HTTP action POSTing JSON to the agent's endpoint).
 - **Issue:** Both descriptions promise "receive webhook events / bidirectional communication", but after removing the Clawdbot section there is no setup instruction left anywhere in the repo. Dangling feature claim.
 - **Fix:** add a short webhooks section (openHAB rule → HTTP action to the agent's endpoint) or soften the description until it exists.
 
-### M4. `_meta.json` slug mismatch / registry metadata in git
+### M4. `_meta.json` slug mismatch / registry metadata in git — FIXED
 - **File:** `_meta.json:3`
 - **Category:** Docs / Hygiene
+- **Status:** Fixed 2026-10-23 — slug corrected to `openhab`. Whether `ownerId`/`publishedAt` belong in git is still open (see WORK.md).
 - **Issue:** `"slug": "home-assistant"` while the skill is named `openhab` — likely inherited from an upstream home-assistant skill this repo was forked from. Publishing under the wrong slug can shadow or conflict with another skill. `ownerId`/`publishedAt` are registry state; decide whether they belong in version control at all.
 - **Fix:** set slug to `openhab`; move or regenerate registry metadata as appropriate for your publishing flow.
 
@@ -100,13 +102,15 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 - **File:** `scripts/oa.sh`
 - **Issue:** Both are required, but nothing verifies them — the old clawdbot metadata used to declare `requires.bins`. A missing `jq` produces a confusing failure in `attributes`/`list`. Add a startup check with a clear error and/or document dependencies in README.
 
-### L4. Documentation inconsistencies between SKILL.md and README.md
+### L4. Documentation inconsistencies between SKILL.md and README.md — FIXED
 - **File:** `SKILL.md`, `README.md:16`, `references/api.md`
 - **Issue:** README mentions the `HA_CONFIG` override, SKILL.md doesn't; URL examples differ (`https://…duckdns.org` vs `http://localhost:8080`) without explaining when each applies; `api.md` hardcodes `http://localhost:8080` instead of using `${OPENHAB_URL}`.
+- **Status:** Fixed 2026-10-23 — SKILL.md now documents the `HA_CONFIG` override, setup examples are identical across both files (HTTPS config / LAN env var), and all `api.md` examples use `${OPENHAB_URL}`.
 
-### L5. Orphaned sentence fragment in SKILL.md
+### L5. Orphaned sentence fragment in SKILL.md — FIXED
 - **File:** `SKILL.md:46`
-- **Issue:** "Checking state of item_name" sits between the heading and the code block — leftover from an earlier edit; reads as a broken paragraph.
+- **Issue:** "Checking state of item_name" sat between the heading and the code block — leftover from an earlier edit; reads as a broken paragraph.
+- **Status:** Fixed 2026-10-23 — fragment removed.
 
 ### L6. Style nits in oa.sh
 - **File:** `scripts/oa.sh:39,43,52` (trailing whitespace), inconsistent quoting (`-X 'POST'` vs `-X POST`) throughout.
