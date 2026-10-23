@@ -67,6 +67,19 @@ oa.sh on LivingRoom_Light
 oa.sh off LivingRoom_Light
 ```
 
+## Webhooks (Inbound)
+
+openHAB can push events to your agent instead of polling: create an openHAB rule with an HTTP action that POSTs a JSON payload to your agent's webhook endpoint when something happens (e.g., a motion sensor triggers):
+
+```json
+{
+  "item": "Motion_Hallway",
+  "state": "ON"
+}
+```
+
+The agent receives the event and can notify you or trigger further actions.
+
 ## Troubleshooting
 
 - **401 Unauthorized**: Your token has expired or is invalid. Generate a new one from your openHAB profile.

@@ -11,7 +11,7 @@ Control your smart home via openHAB's REST API and webhooks.
 
 ### Option 1: Config File (Recommended)
 
-Create `~/.config/openhab/config.json`:
+Create a configuration file at `~/.config/openhab/config.json` (or set `HA_CONFIG` to point to your config file):
 ```json
 {
   "url": "https://your-openhab-instance.duckdns.org",
@@ -53,7 +53,7 @@ curl -s -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: applicati
 ```
 
 ### Get Entity State
-Checking state of item_name
+
 ```bash
 curl -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/item_name/state"
 ```
@@ -67,6 +67,19 @@ curl -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "
 # Turn off item_name
 curl -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/item_name" -d 'OFF'
 ```
+
+## Webhooks (Inbound)
+
+openHAB can push events to your agent instead of polling: create an openHAB rule with an HTTP action that POSTs a JSON payload to your agent's webhook endpoint when something happens (e.g., a motion sensor triggers):
+
+```json
+{
+  "item": "Motion_Hallway",
+  "state": "ON"
+}
+```
+
+The agent receives the event and can notify you or trigger further actions.
 
 ## CLI Wrapper
 
