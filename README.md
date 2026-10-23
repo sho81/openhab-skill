@@ -17,9 +17,15 @@ Create a configuration file at `~/.config/openhab/config.json` (or set `HA_CONFI
 
 ```json
 {
-  "url": "http://your-openhab-instance:8080",
+  "url": "https://your-openhab-instance.duckdns.org",
   "token": "your-long-lived-access-token"
 }
+```
+
+The file contains your token, so restrict its permissions:
+
+```bash
+chmod 600 ~/.config/openhab/config.json
 ```
 
 ### Option 2: Environment Variables
@@ -27,17 +33,21 @@ Create a configuration file at `~/.config/openhab/config.json` (or set `HA_CONFI
 Alternatively, you can set the following environment variables:
 
 ```bash
-export OPENHAB_URL="http://your-openhab-instance:8080"
+export OPENHAB_URL="http://openhab.local:8080"
 export OPENHAB_TOKEN="your-long-lived-access-token"
 ```
+
+> **TLS:** over plain HTTP the token and all states travel in cleartext — acceptable on a trusted LAN, but prefer HTTPS for anything beyond it. For self-signed certificates pass `--cacert /path/to/ca.crt` to curl; avoid `-k`, which disables verification entirely.
 
 ### Getting an API Token
 
 1. Sign in to openHAB with your administrator username and password (bottom left).
 2. Click again on the profile button to access your profile page.
 3. Click on "Create new API token".
-4. Enter your admin username and password, fill in the token name (e.g., "AI Agent"), and select a Token Scope.
+4. Enter your admin username and password, fill in the token name (e.g., "AI Agent"), and select the narrowest Token Scope that works — `Items` is enough for this skill.
 5. Copy the complete token immediately (it will only be shown once).
+
+> **Least privilege:** consider a dedicated non-admin user with an Items-only scope instead of your admin account. If openHAB is exposed to the internet (e.g., via duckdns), put it behind a reverse proxy with TLS and consider IP allowlisting.
 
 
 ## CLI Wrapper
