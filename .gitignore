@@ -1,6 +1,9 @@
 # Local secrets / config (a token file was tracked here before — see H4)
 token
 
+# Local work notes (session log — not for publication)
+WORK.md
+
 # OS cruft
 .DS_Store
 Thumbs.db
