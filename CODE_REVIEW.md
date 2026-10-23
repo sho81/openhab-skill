@@ -27,15 +27,17 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 - **Issue:** curl was called without `-f`, so it exited 0 even on 4xx/5xx. The script then unconditionally printed `✓ $item turned on/off`. A 401 (expired token) or 404 (wrong item name) looked like success to the calling AI agent — which may believe a light is ON when it isn't.
 - **Fix:** use `curl -sf` and only print the ✓ after checking the exit code; better, capture `-w '%{http_code}'` and surface non-2xx with a clear error message.
 
-### H2. Plain HTTP recommended by default for a Bearer-token API
+### H2. Plain HTTP recommended by default for a Bearer-token API — FIXED
 - **File:** `README.md:20`, `SKILL.md:25` (examples use `http://…:8080`)
 - **Category:** Security
+- **Status:** Fixed 2026-10-23 — config examples now use HTTPS; added a TLS note to both docs (LAN-only HTTP acceptable if deliberate, `--cacert` for self-signed certs, warn against `-k`).
 - **Issue:** The token and all smart-home state travel in cleartext. Fine on a trusted LAN, but the SKILL.md config example (`https://your-openhab-instance.duckdns.org`, line 17) implies internet exposure — where cleartext HTTP is much worse. No guidance anywhere on TLS or self-signed certs (users will reach for `curl -k`).
 - **Fix:** recommend HTTPS as the default; document CA handling (`--cacert` / trust store); explicitly warn against `-k`; note that LAN-only HTTP is an acceptable trade-off if stated deliberately.
 
-### H3. Token in plaintext config file, no permission guidance
+### H3. Token in plaintext config file, no permission guidance — FIXED
 - **File:** `SKILL.md:14–20`, `README.md:16–23`
 - **Category:** Security
+- **Status:** Fixed 2026-10-23 — both docs now instruct `chmod 600 ~/.config/openhab/config.json`. (Optional `oa.sh` warning for group/world-readable config not implemented.)
 - **Issue:** The recommended setup stores the long-lived token in `~/.config/openhab/config.json`. With a default umask of 022 that file is world-readable (644) — any local user can read the token. No `chmod 600` hint anywhere.
 - **Fix:** document `chmod 600 ~/.config/openhab/config.json`; optionally have `oa.sh` warn when the config file is group/world readable.
 
@@ -113,9 +115,10 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 - **File:** repo root
 - **Issue:** No license file for a published skill; no `.gitignore` — the previously tracked `token` secret (see H4) shows how easily local files end up in git.
 
-### L8. Least-privilege token guidance missing
+### L8. Least-privilege token guidance missing — FIXED
 - **File:** `SKILL.md:34`, `README.md:39`
 - **Issue:** Docs say "select a Token Scope" but don't recommend the minimal scope (e.g., Items only) or a dedicated non-admin user; no note about hardening if the instance is internet-exposed via duckdns (reverse proxy + TLS, consider IP allowlist).
+- **Status:** Fixed 2026-10-23 — step 4 now recommends the narrowest scope (`Items`), plus a least-privilege/internet-exposure note in both docs.
 
 ---
 
