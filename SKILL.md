@@ -7,6 +7,10 @@ description: Control openHAB smart home devices, run automations, and receive we
 
 Control your smart home via openHAB's REST API and webhooks.
 
+## Disclaimer
+
+This skill is provided **as is**, without warranty of any kind, express or implied. It is a convenience wrapper around the openHAB REST API — not production-grade software and not intended for production use. **Use at your own risk.** See [LICENSE](LICENSE) for legal details.
+
 ## Setup
 
 ### Option 1: Config File (Recommended)

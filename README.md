@@ -2,6 +2,10 @@
 
 This repository provides a skill for AI agents to control openHAB smart home devices, run automations, and receive webhook events. It supports bidirectional communication via the openHAB REST API (outbound) and webhooks (inbound triggers from openHAB automations).
 
+## Disclaimer
+
+This skill is provided **as is**, without warranty of any kind, express or implied. It is a convenience wrapper around the openHAB REST API — not production-grade software and not intended for production use. **Use at your own risk.** See [LICENSE](LICENSE) for legal details.
+
 ## Features
 
 - Control lights, switches, climate, scenes, scripts, or any openHAB entity.
