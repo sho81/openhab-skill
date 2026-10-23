@@ -39,18 +39,26 @@ case "$cmd" in
     # Turn on item: oa.sh on living_room 
     item="${1:?Usage: oa.sh on <item_id> }"
 
-    curl -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'ON'
-    
-    echo "✓ $item turned on"
+    http_code=$(curl -s -o /dev/null -w '%{http_code}' -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'ON')
+    if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
+      echo "✓ $item turned on"
+    else
+      echo "✗ failed to turn on $item (HTTP $http_code)" >&2
+      exit 1
+    fi
     ;;
 
   off|turn_off)
     # Turn off item: oa.sh on living_room 
     item="${1:?Usage: oa.sh on <item_id> }"
 
-    curl -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'OFF'
-    
-    echo "✓ $item turned off"
+    http_code=$(curl -s -o /dev/null -w '%{http_code}' -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'OFF')
+    if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
+      echo "✓ $item turned off"
+    else
+      echo "✗ failed to turn off $item (HTTP $http_code)" >&2
+      exit 1
+    fi
     ;;
 
  
