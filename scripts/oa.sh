@@ -45,6 +45,13 @@ case "$cmd" in
     curl "${CURL_OPTS[@]}" -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items/${item}" | jq
     ;;
 
+  thing-status)
+    # Get Thing online status: oa.sh thing-status mybinding:MyThingType:abc123
+    uid="${1:?Usage: oa.sh thing-status <thing_uid>}"
+    [[ "$uid" =~ ^[A-Za-z0-9]+:[A-Za-z0-9_:-]+$ ]] || { echo "✗ invalid Thing UID '$uid' (expected binding:type:uid)" >&2; exit 1; }
+    curl "${CURL_OPTS[@]}" -s -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/things/${uid}/status" | jq
+    ;;
+
   on|turn_on)
     # Turn on item: oa.sh on living_room
     item="${1:?Usage: oa.sh on <item_id>}"
@@ -98,6 +105,7 @@ Commands:
   on <item>                 Turn on
   off <item>                Turn off
   list [type]               List items (e.g., all, Switch, Dimmer)
+  thing-status <uid>        Get Thing online status
 
 Environment:
   OPENHAB_URL    openHAB URL (required)

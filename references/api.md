@@ -18,6 +18,7 @@ Authorization: Bearer <long-lived-access-token>
 | `/rest/items/{itemname}` | POST | Send a command to an item |
 | `/rest/items/{itemname}/state` | PUT | Update the state of an item |
 | `/rest/things` | GET | Get all available things |
+| `/rest/things/{thinguid}/status` | GET | Get online status of a Thing (ONLINE/OFFLINE) |
 | `/rest/links` | GET | Get all available links |
 | `/rest/rules` | GET | Get all available rules |
 
@@ -38,6 +39,15 @@ curl -X GET "${OPENHAB_URL}/rest/items?recursive=false" -H "Authorization: Beare
 ```bash
 # Get state as plain text
 curl -X GET "${OPENHAB_URL}/rest/items/LivingRoom_Light/state" -H "Authorization: Bearer <token>" -H "Accept: text/plain"
+```
+
+### Get Thing Status
+
+Thing UIDs have the form `binding:thingType:uid` (e.g., `mybinding:MyThingType:abc123`). Colons may be left unencoded in the URL.
+
+```bash
+curl -X GET "${OPENHAB_URL}/rest/things/mybinding:MyThingType:abc123/status" -H "Authorization: Bearer <token>" -H "Accept: application/json"
+# → {"status":"ONLINE","statusDetail":"NONE"}
 ```
 
 ### Send Command to Item

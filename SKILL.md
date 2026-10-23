@@ -62,6 +62,13 @@ curl -s -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: applicati
 curl -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/item_name/state"
 ```
 
+### Thing Status (online/offline)
+
+```bash
+curl -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" "${OPENHAB_URL}/rest/things/thing_uid/status"
+# → {"status":"ONLINE","statusDetail":"NONE"}
+```
+
 ### Control Devices
 
 ```bash
@@ -100,6 +107,9 @@ oa.sh state LivingRoom_Light
 oa.sh attributes LivingRoom_Light   # full details with attributes
 oa.sh on LivingRoom_Light
 oa.sh off LivingRoom_Light
+
+# Thing online status (Thing UID = binding:type:uid)
+oa.sh thing-status mybinding:MyThingType:abc123
 ```
 
 ## Troubleshooting
