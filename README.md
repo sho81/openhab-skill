@@ -52,7 +52,7 @@ export OPENHAB_TOKEN="your-long-lived-access-token"
 
 ## CLI Wrapper
 
-The `scripts/oa.sh` CLI provides easy access to openHAB functions from the terminal:
+The `scripts/oa.sh` CLI provides easy access to openHAB functions from the terminal. It requires `jq` and `curl`:
 
 ```bash
 # List entities

@@ -1,0 +1,6 @@
+# Local secrets / config (a token file was tracked here before — see H4)
+token
+
+# OS cruft
+.DS_Store
+Thumbs.db

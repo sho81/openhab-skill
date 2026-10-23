@@ -15,37 +15,42 @@ fi
 : "${OPENHAB_URL:?Set OPENHAB_URL or configure $CONFIG_FILE}"
 : "${OPENHAB_TOKEN:?Set OPENHAB_TOKEN or configure $CONFIG_FILE}"
 
+for dep in jq curl; do
+  command -v "$dep" >/dev/null || { echo "✗ required dependency '$dep' not found in PATH" >&2; exit 1; }
+done
+
 # Timeouts so a hung instance doesn't block the CLI/agent forever (M5)
 CURL_OPTS=(--connect-timeout 5 --max-time 10)
 
+# Keep the token out of curl's argv (visible via ps); mktemp creates with mode 600 (M2)
+AUTH_FILE=$(mktemp) || exit 1
+trap 'rm -f "$AUTH_FILE"' EXIT
+printf 'Authorization: Bearer %s\n' "$OPENHAB_TOKEN" > "$AUTH_FILE"
+
 cmd="${1:-help}"
 shift || true
-
-api() {
-  curl "${CURL_OPTS[@]}" -s -H "Authorization: Bearer $OPENHAB_TOKEN" -H "Content-Type: application/json" "$@"
-}
 
 case "$cmd" in
   state|get)
     # Get item state: oa.sh state living_room
     item="${1:?Usage: oa.sh state <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
-    curl "${CURL_OPTS[@]}" -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/${item}/state"
+    curl "${CURL_OPTS[@]}" -X GET -H @"$AUTH_FILE" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/${item}/state"
     ;;
 
   attributes)
-  # Get item state: oa.sh state living_room
-    item="${1:?Usage: oa.sh state <item_id>}"
+    # Get item attributes: oa.sh attributes living_room
+    item="${1:?Usage: oa.sh attributes <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
-    curl "${CURL_OPTS[@]}" -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: application/json" "${OPENHAB_URL}/rest/items/${item}" | jq
+    curl "${CURL_OPTS[@]}" -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items/${item}" | jq
     ;;
 
   on|turn_on)
-    # Turn on item: oa.sh on living_room 
-    item="${1:?Usage: oa.sh on <item_id> }"
+    # Turn on item: oa.sh on living_room
+    item="${1:?Usage: oa.sh on <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
 
-    http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'ON')
+    http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X POST -H "Accept: */*" -H @"$AUTH_FILE" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'ON')
     if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
       echo "✓ $item turned on"
     else
@@ -55,11 +60,11 @@ case "$cmd" in
     ;;
 
   off|turn_off)
-    # Turn off item: oa.sh on living_room 
-    item="${1:?Usage: oa.sh on <item_id> }"
+    # Turn off item: oa.sh off living_room
+    item="${1:?Usage: oa.sh off <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
 
-    http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X 'POST' -H 'accept: */*' -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'OFF')
+    http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X POST -H "Accept: */*" -H @"$AUTH_FILE" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'OFF')
     if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
       echo "✓ $item turned off"
     else
@@ -68,16 +73,15 @@ case "$cmd" in
     fi
     ;;
 
- 
   list)
     # List entities by type: oa.sh list Switch / oa.sh list all
     filter="${1:-all}"
     if [[ "$filter" == "all" ]]; then
-      curl "${CURL_OPTS[@]}" -s -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false"| jq -r '.[].name' | sort
+      curl "${CURL_OPTS[@]}" -s -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false"| jq -r '.[].name' | sort
     else
       # Normalize: "lights" -> "light", "switches" -> "switch"
       filter="${filter%s}"
-      curl "${CURL_OPTS[@]}" -s -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false" | jq -r --arg d "$filter" \
+      curl "${CURL_OPTS[@]}" -s -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false" | jq -r --arg d "$filter" \
         '.[] | select(.type | test($d; "i")) | .name' | sort
     fi
     ;;
@@ -91,7 +95,7 @@ Usage: oa.sh <command> [args...]
 Commands:
   state <item>              Get item state
   attributes <item>         Get full item state with attributes
-  on <item>                 Turn on 
+  on <item>                 Turn on
   off <item>                Turn off
   list [type]               List items (e.g., all, Switch, Dimmer)
 
