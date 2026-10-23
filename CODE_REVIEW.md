@@ -39,9 +39,10 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 - **Issue:** The recommended setup stores the long-lived token in `~/.config/openhab/config.json`. With a default umask of 022 that file is world-readable (644) — any local user can read the token. No `chmod 600` hint anywhere.
 - **Fix:** document `chmod 600 ~/.config/openhab/config.json`; optionally have `oa.sh` warn when the config file is group/world readable.
 
-### H4. Deleted token secret still recoverable from git history (public repo)
+### H4. Deleted token secret still recoverable from git history (public repo) — FIXED
 - **File:** commit `875d706` (deletion of tracked `token` file); original in `908adce` (init)
 - **Category:** Security
+- **Status:** Fixed 2026-10-23 — token rotated in openHAB. The old value is still recoverable from history (`git show 908adce:token`) until scrubbed with `git filter-repo` (optional).
 - **Issue:** The long-lived openHAB access token was committed at init and is still present in the history of `origin/main`. Deleting the file only removes it from HEAD — anyone can recover it with `git show 908adce:token`. The remote (`github.com/sho81/openhab-skill`) answers 200 unauthenticated, i.e. it appears **public**, so the secret should be considered exposed until rotated.
 - **Fix:** rotate now (create a new token in openHAB, update `~/.config/openhab/config.json` / env var); optionally scrub history with `git filter-repo --path token` and force-push if you want it fully gone; add `.gitignore` so local config files don't get re-added (see L7).
 
@@ -49,9 +50,10 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 
 ## P1 — Medium
 
-### M1. Item name interpolated into URL without validation or encoding
-- **File:** `scripts/oa.sh:29,35,42,51`
+### M1. Item name interpolated into URL without validation or encoding — FIXED
+- **File:** `scripts/oa.sh` (state/attributes/on/off cases)
 - **Category:** Security / Robustness
+- **Status:** Fixed 2026-10-23 — item names are validated against `^[A-Za-z0-9_]+$`; anything else is rejected with ✗ + exit 1 before the request is made.
 - **Issue:** `${item}` is pasted directly into the path (`…/rest/items/${item}/state`). openHAB item names are normally `[A-Za-z0-9_]+`, but an agent could pass `foo/../rules` or a name with spaces → wrong endpoint or broken request.
 - **Fix:** validate against `^[A-Za-z0-9_]+$` (reject otherwise) or URL-encode the segment.
 
@@ -73,9 +75,10 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 - **Issue:** `"slug": "home-assistant"` while the skill is named `openhab` — likely inherited from an upstream home-assistant skill this repo was forked from. Publishing under the wrong slug can shadow or conflict with another skill. `ownerId`/`publishedAt` are registry state; decide whether they belong in version control at all.
 - **Fix:** set slug to `openhab`; move or regenerate registry metadata as appropriate for your publishing flow.
 
-### M5. No curl timeouts — a hung openHAB blocks the CLI forever
+### M5. No curl timeouts — a hung openHAB blocks the CLI forever — FIXED
 - **File:** `scripts/oa.sh` (all curl calls)
 - **Category:** Robustness
+- **Status:** Fixed 2026-10-23 — all curl calls use a shared `CURL_OPTS=(--connect-timeout 5 --max-time 10)`; verified against a black-hole IP (bails at ~5s with curl error 28).
 - **Issue:** If the instance is up but not responding, every command hangs indefinitely; an agent waiting on it stalls too.
 - **Fix:** add `--connect-timeout 5 --max-time 10` (or make it configurable via env var).
 
