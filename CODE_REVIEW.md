@@ -1,15 +1,16 @@
 # Code & Security Review — openhab-skill
 
-- **Date:** 2026-10-21
-- **Scope:** all tracked files (`SKILL.md`, `README.md`, `_meta.json`, `references/api.md`, `scripts/oa.sh`)
-- **Method:** manual review + `bash -n` syntax check (no shellcheck available on this machine)
+- **Date:** 2026-10-21 · **Last updated:** 2026-11-02 (added M6–M7 from the pre-publication audit; rename noted)
+- **Scope:** all tracked files (`SKILL.md`, `README.md`, `_meta.json`, `references/api.md`, `scripts/oa.sh` — the script was renamed to `scripts/openhab.sh` on 2026-11-02; this report keeps the original name as historical record)
+- **Method:** manual review + `bash -n` syntax check; follow-up fixes verified against a local mock openHAB server (no shellcheck available on this machine)
+- **Companion document:** release-level findings (git-history secrets, PII, licensing/provenance, commit signing) are tracked in [SECURITY_AUDIT.md](SECURITY_AUDIT.md) and not repeated here.
 
 ## Summary
 
 | Priority | Count | IDs |
 |----------|-------|-----|
 | P0 — High | 4 | H1–H4 |
-| P1 — Medium | 5 | M1–M5 |
+| P1 — Medium | 7 | M1–M7 |
 | P2 — Low | 8 | L1–L8 |
 
 The skill is small and mostly documentation; the only executable code is `scripts/oa.sh`. The most important issues are that **the deleted token secret is still public via GitHub history** (H4), that **HTTP errors are reported as success** (H1), and that **docs default to plain HTTP for a Bearer-token API** (H2).
@@ -44,7 +45,7 @@ Work-specific tracking (commits, progress) lived in a local notes file (`WORK.md
 ### H4. Deleted token secret still recoverable from git history (public repo) — FIXED
 - **File:** the tracked `token` file (introduced at init, removed when the secret was dropped)
 - **Category:** Security
-- **Status:** Fixed 2026-10-23 — token rotated in openHAB. History later scrubbed with `git filter-repo --replace-text`: in every commit the old value is replaced by a `REDACTED-ROTATED` placeholder, so it is no longer recoverable from the published history (the pre-rewrite commit hashes cited in earlier revisions of this report no longer exist).
+- **Status:** Fixed 2026-10-23 — token rotated in openHAB. History later scrubbed with `git filter-repo --replace-text`: in every commit the old value is replaced by a `REDACTED-ROTATED` placeholder, so it is no longer recoverable from the published history (the pre-rewrite commit hashes cited in earlier revisions of this report no longer exist). Force-push completed 2026-10-25; live-verified — see `SECURITY_AUDIT.md` S1.
 - **Issue:** The long-lived openHAB access token was committed at init and is still present in the history of `origin/main`. Deleting the file only removes it from HEAD — anyone can recover it with `git show 908adce:token`. The remote (`github.com/sho81/openhab-skill`) answers 200 unauthenticated, i.e. it appears **public**, so the secret should be considered exposed until rotated.
 - **Fix:** rotate now (create a new token in openHAB, update `~/.config/openhab/config.json` / env var); optionally scrub history with `git filter-repo --path token` and force-push if you want it fully gone; add `.gitignore` so local config files don't get re-added (see L7).
 
@@ -86,6 +87,20 @@ Work-specific tracking (commits, progress) lived in a local notes file (`WORK.md
 - **Status:** Fixed 2026-10-23 — all curl calls use a shared `CURL_OPTS=(--connect-timeout 5 --max-time 10)`; verified against a black-hole IP (bails at ~5s with curl error 28).
 - **Issue:** If the instance is up but not responding, every command hangs indefinitely; an agent waiting on it stalls too.
 - **Fix:** add `--connect-timeout 5 --max-time 10` (or make it configurable via env var).
+
+### M6. GET commands still reported success on HTTP errors (H1 class) — FIXED
+- **File:** `scripts/oa.sh` (`state`/`attributes`/`thing-status` cases; now `scripts/openhab.sh`)
+- **Category:** Bug / Security
+- **Status:** Fixed 2026-10-25 — found during the pre-publication audit; GET commands capture `%{http_code}` like on/off (non-2xx → ✗ + exit 1), every curl call is silent (`-s`) and has a curl-error handler for network failures; verified against a mock server (404 → ✗, exit 1).
+- **Issue:** The H1 fix covered only on/off. The GET commands piped raw bodies: a 404 (missing item) produced empty output with exit 0 — an agent could read "no state" as success — and a 401 printed the error body as if it were data.
+- **Fix:** apply the on/off status-code pattern to all GETs; add `curl error` handling for connection failures.
+
+### M7. `list <type>` plural normalization broken for "-es" words — FIXED
+- **File:** `scripts/oa.sh` (`list` case; now `scripts/openhab.sh`)
+- **Category:** Bug
+- **Status:** Fixed 2026-10-25 — `-es` stems are stripped before a trailing `s` ("switches" → "switch"); mock-verified (`switches`/`switch`/`dimmers` all match their types).
+- **Issue:** The code comment promised `switches -> switch`, but `${filter%s}` strips a single `s`, leaving `switche`, which matches no type — `list switches` silently returned nothing. Docs only showed singular forms, so this stayed unnoticed.
+- **Fix:** strip `es` when present, otherwise `s`.
 
 ---
 
