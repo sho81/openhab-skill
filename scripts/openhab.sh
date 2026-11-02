@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # openhab CLI wrapper
-# Usage: oa.sh <command> [args...]
+# Usage: openhab.sh <command> [args...]
 
 set -euo pipefail
 
@@ -32,8 +32,8 @@ shift || true
 
 case "$cmd" in
   state|get)
-    # Get item state: oa.sh state living_room
-    item="${1:?Usage: oa.sh state <item_id>}"
+    # Get item state: openhab.sh state living_room
+    item="${1:?Usage: openhab.sh state <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
     resp=$(curl "${CURL_OPTS[@]}" -s -w '\n%{http_code}' -X GET -H @"$AUTH_FILE" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/${item}/state") || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
     http_code="${resp##*$'\n'}"
@@ -46,8 +46,8 @@ case "$cmd" in
     ;;
 
   attributes)
-    # Get item attributes: oa.sh attributes living_room
-    item="${1:?Usage: oa.sh attributes <item_id>}"
+    # Get item attributes: openhab.sh attributes living_room
+    item="${1:?Usage: openhab.sh attributes <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
     resp=$(curl "${CURL_OPTS[@]}" -s -w '\n%{http_code}' -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items/${item}") || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
     http_code="${resp##*$'\n'}"
@@ -60,8 +60,8 @@ case "$cmd" in
     ;;
 
   thing-status)
-    # Get Thing online status: oa.sh thing-status mybinding:MyThingType:abc123
-    uid="${1:?Usage: oa.sh thing-status <thing_uid>}"
+    # Get Thing online status: openhab.sh thing-status mybinding:MyThingType:abc123
+    uid="${1:?Usage: openhab.sh thing-status <thing_uid>}"
     [[ "$uid" =~ ^[A-Za-z0-9]+:[A-Za-z0-9_:-]+$ ]] || { echo "✗ invalid Thing UID '$uid' (expected binding:type:uid)" >&2; exit 1; }
     resp=$(curl "${CURL_OPTS[@]}" -s -w '\n%{http_code}' -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/things/${uid}/status") || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
     http_code="${resp##*$'\n'}"
@@ -74,8 +74,8 @@ case "$cmd" in
     ;;
 
   on|turn_on)
-    # Turn on item: oa.sh on living_room
-    item="${1:?Usage: oa.sh on <item_id>}"
+    # Turn on item: openhab.sh on living_room
+    item="${1:?Usage: openhab.sh on <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
 
     http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X POST -H "Accept: */*" -H @"$AUTH_FILE" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'ON') || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
@@ -88,8 +88,8 @@ case "$cmd" in
     ;;
 
   off|turn_off)
-    # Turn off item: oa.sh off living_room
-    item="${1:?Usage: oa.sh off <item_id>}"
+    # Turn off item: openhab.sh off living_room
+    item="${1:?Usage: openhab.sh off <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
 
     http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X POST -H "Accept: */*" -H @"$AUTH_FILE" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'OFF') || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
@@ -102,7 +102,7 @@ case "$cmd" in
     ;;
 
   list)
-    # List entities by type: oa.sh list Switch / oa.sh list all
+    # List entities by type: openhab.sh list Switch / openhab.sh list all
     filter="${1:-all}"
     if [[ "$filter" == "all" ]]; then
       curl "${CURL_OPTS[@]}" -s -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false"| jq -r '.[].name' | sort
@@ -118,7 +118,7 @@ case "$cmd" in
     cat <<EOF
 openHAB CLI
 
-Usage: oa.sh <command> [args...]
+Usage: openhab.sh <command> [args...]
 
 Commands:
   state <item>              Get item state
@@ -134,8 +134,8 @@ Environment:
   HA_CONFIG      Config file path (default: ~/.config/openhab/config.json; env vars win)
 
 Examples:
-  oa.sh on LivingRoom_Light
-  oa.sh list Switch
+  openhab.sh on LivingRoom_Light
+  openhab.sh list Switch
 EOF
     ;;
 esac

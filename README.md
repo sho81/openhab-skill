@@ -15,7 +15,7 @@ This skill is provided **as is**, without warranty of any kind, express or impli
 - Control lights, switches, climate, scenes, scripts, or any openHAB entity.
 - List and search for available items.
 - Get the current state and attributes of any item.
-- Easy-to-use CLI wrapper (`scripts/oa.sh`) for manual testing and interaction.
+- Easy-to-use CLI wrapper (`scripts/openhab.sh`) for manual testing and interaction.
 
 ## Setup
 
@@ -60,19 +60,19 @@ export OPENHAB_TOKEN="your-long-lived-access-token"
 
 ## CLI Wrapper
 
-The `scripts/oa.sh` CLI provides easy access to openHAB functions from the terminal. It requires `jq` and `curl`:
+The `scripts/openhab.sh` CLI provides easy access to openHAB functions from the terminal. It requires `jq` and `curl`:
 
 ```bash
 # List entities
-oa.sh list all          # List all entities
-oa.sh list Switch       # List only switches
-oa.sh list Dimmer       # List only dimmers
+openhab.sh list all          # List all entities
+openhab.sh list Switch       # List only switches
+openhab.sh list Dimmer       # List only dimmers
 
 # Get/set state
-oa.sh state LivingRoom_Light
-oa.sh attributes LivingRoom_Light   # Get full details with attributes
-oa.sh on LivingRoom_Light
-oa.sh off LivingRoom_Light
+openhab.sh state LivingRoom_Light
+openhab.sh attributes LivingRoom_Light   # Get full details with attributes
+openhab.sh on LivingRoom_Light
+openhab.sh off LivingRoom_Light
 ```
 
 ## Webhooks (Inbound)

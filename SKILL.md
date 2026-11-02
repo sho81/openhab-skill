@@ -109,22 +109,22 @@ The agent receives the event and can notify you or trigger further actions.
 
 ## CLI Wrapper
 
-The `scripts/oa.sh` CLI provides easy access to openHAB functions:
+The `scripts/openhab.sh` CLI provides easy access to openHAB functions:
 
 ```bash
 # List entities
-oa.sh list all          # all entities
-oa.sh list Switch       # just switches
-oa.sh list Dimmer       # just dimmers
+openhab.sh list all          # all entities
+openhab.sh list Switch       # just switches
+openhab.sh list Dimmer       # just dimmers
 
 # Get/set state
-oa.sh state LivingRoom_Light
-oa.sh attributes LivingRoom_Light   # full details with attributes
-oa.sh on LivingRoom_Light
-oa.sh off LivingRoom_Light
+openhab.sh state LivingRoom_Light
+openhab.sh attributes LivingRoom_Light   # full details with attributes
+openhab.sh on LivingRoom_Light
+openhab.sh off LivingRoom_Light
 
 # Thing online status (Thing UID = binding:type:uid)
-oa.sh thing-status mybinding:MyThingType:abc123
+openhab.sh thing-status mybinding:MyThingType:abc123
 ```
 
 ## Troubleshooting
