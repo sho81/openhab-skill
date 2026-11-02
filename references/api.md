@@ -1,7 +1,6 @@
 # openHAB REST API Reference
 
-> **Tested against:** openHAB **5.2.1** (Release Build), REST API version 8, OpenAPI 3.0.1 specification.
-> The full machine-readable spec is served by the instance itself at `GET ${OPENHAB_URL}/rest/spec` — it is the same document MainUI's *Developer → API Explorer* renders. Consult it for endpoints beyond this reference.
+> **Source:** Based on the openHAB **5.2.1** (Release Build) REST API, OpenAPI 3.0.1 specification (REST API version 8). The full machine-readable spec is served by the instance itself at `GET ${OPENHAB_URL}/rest/spec` — it is the same document MainUI's *Developer → API Explorer* renders. Consult it for endpoints beyond this reference.
 
 ## Authentication
 
@@ -102,6 +101,8 @@ Returns the full thing including its channels and linked items. Note that `confi
 ```bash
 curl -X GET "${OPENHAB_URL}/rest/things/mybinding:MyThingType:abc123" -H "Authorization: Bearer <token>" -H "Accept: application/json"
 ```
+
+> **Note:** `GET /things/{thingUID}/channels` (and `.../channels/{channelID}`) may return 404 with an empty body depending on instance version or token scope. The thing JSON above is the reliable way to enumerate channels and their linked items — see *Get Channel Value* in SKILL.md for the resolution recipe.
 
 ## Item Object
 

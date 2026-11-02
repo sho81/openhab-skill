@@ -1,11 +1,13 @@
 ---
 name: openhab
-description: Control openHAB smart home devices, run automations, and receive webhook events. Use when controlling lights, switches, climate, scenes, scripts, or any openHAB entity. Supports bidirectional communication via REST API (outbound) and webhooks (inbound triggers from openHAB automations).
+description: Control openHAB smart home devices and receive webhook events. Use when controlling lights, switches, climate, scenes, scripts, or any openHAB entity. Supports bidirectional communication via REST API (outbound) and webhooks (inbound triggers from openHAB automations).
 ---
 
 # openHAB
 
 Control your smart home via openHAB's REST API and webhooks.
+
+> **Scope:** This skill only reads and commands Items and reads Thing status. It does **not** run openHAB rules/automations (no `/rest/rules` support); openHAB automations can push events to the agent via webhooks (see below), but cannot be triggered from it.
 
 ## Disclaimer
 
@@ -60,6 +62,19 @@ curl -s -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: applicati
 
 ```bash
 curl -X GET -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/item_name/state"
+```
+
+### Get Channel Value
+
+Channels are addressed as `binding:type:uid:channel` (four parts, vs. three for a Thing UID). A channel's value lives on its linked item(s), so resolve channel → item via the thing JSON first — the sub-resource `/rest/things/<thingUID>/channels` may 404 depending on instance or token scope:
+
+```bash
+# Resolve channel to its linked item name(s)
+curl -s -H "Authorization: Bearer ${OPENHAB_TOKEN}" "${OPENHAB_URL}/rest/things/binding:type:uid" \
+  | jq -r '.channels[] | select(.id=="channel_id") | .linkedItems[]'
+
+# Then read the state as usual (see Get Entity State)
+curl -s -H "Authorization: Bearer ${OPENHAB_TOKEN}" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/<item_name>/state"
 ```
 
 ### Thing Status (online/offline)

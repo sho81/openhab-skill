@@ -35,21 +35,42 @@ case "$cmd" in
     # Get item state: oa.sh state living_room
     item="${1:?Usage: oa.sh state <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
-    curl "${CURL_OPTS[@]}" -X GET -H @"$AUTH_FILE" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/${item}/state"
+    resp=$(curl "${CURL_OPTS[@]}" -s -w '\n%{http_code}' -X GET -H @"$AUTH_FILE" -H "Accept: text/plain" "${OPENHAB_URL}/rest/items/${item}/state") || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
+    http_code="${resp##*$'\n'}"
+    if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
+      printf '%s\n' "${resp%$'\n'*}"
+    else
+      echo "✗ failed to get state of $item (HTTP $http_code)" >&2
+      exit 1
+    fi
     ;;
 
   attributes)
     # Get item attributes: oa.sh attributes living_room
     item="${1:?Usage: oa.sh attributes <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
-    curl "${CURL_OPTS[@]}" -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items/${item}" | jq
+    resp=$(curl "${CURL_OPTS[@]}" -s -w '\n%{http_code}' -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items/${item}") || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
+    http_code="${resp##*$'\n'}"
+    if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
+      printf '%s\n' "${resp%$'\n'*}" | jq
+    else
+      echo "✗ failed to get attributes of $item (HTTP $http_code)" >&2
+      exit 1
+    fi
     ;;
 
   thing-status)
     # Get Thing online status: oa.sh thing-status mybinding:MyThingType:abc123
     uid="${1:?Usage: oa.sh thing-status <thing_uid>}"
     [[ "$uid" =~ ^[A-Za-z0-9]+:[A-Za-z0-9_:-]+$ ]] || { echo "✗ invalid Thing UID '$uid' (expected binding:type:uid)" >&2; exit 1; }
-    curl "${CURL_OPTS[@]}" -s -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/things/${uid}/status" | jq
+    resp=$(curl "${CURL_OPTS[@]}" -s -w '\n%{http_code}' -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/things/${uid}/status") || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
+    http_code="${resp##*$'\n'}"
+    if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
+      printf '%s\n' "${resp%$'\n'*}" | jq
+    else
+      echo "✗ failed to get status of $uid (HTTP $http_code)" >&2
+      exit 1
+    fi
     ;;
 
   on|turn_on)
@@ -57,7 +78,7 @@ case "$cmd" in
     item="${1:?Usage: oa.sh on <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
 
-    http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X POST -H "Accept: */*" -H @"$AUTH_FILE" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'ON')
+    http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X POST -H "Accept: */*" -H @"$AUTH_FILE" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'ON') || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
     if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
       echo "✓ $item turned on"
     else
@@ -71,7 +92,7 @@ case "$cmd" in
     item="${1:?Usage: oa.sh off <item_id>}"
     [[ "$item" =~ ^[A-Za-z0-9_]+$ ]] || { echo "✗ invalid item name '$item' (expected [A-Za-z0-9_])" >&2; exit 1; }
 
-    http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X POST -H "Accept: */*" -H @"$AUTH_FILE" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'OFF')
+    http_code=$(curl "${CURL_OPTS[@]}" -s -o /dev/null -w '%{http_code}' -X POST -H "Accept: */*" -H @"$AUTH_FILE" -H "Content-Type: text/plain" "${OPENHAB_URL}/rest/items/${item}" -d 'OFF') || { echo "✗ request failed (curl error $?)" >&2; exit 1; }
     if [[ "$http_code" =~ ^2[0-9][0-9]$ ]]; then
       echo "✓ $item turned off"
     else
@@ -87,7 +108,7 @@ case "$cmd" in
       curl "${CURL_OPTS[@]}" -s -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false"| jq -r '.[].name' | sort
     else
       # Normalize: "lights" -> "light", "switches" -> "switch"
-      filter="${filter%s}"
+      if [[ "$filter" == *es ]]; then filter="${filter%es}"; else filter="${filter%s}"; fi
       curl "${CURL_OPTS[@]}" -s -X GET -H @"$AUTH_FILE" -H "Accept: application/json" "${OPENHAB_URL}/rest/items?recursive=false" | jq -r --arg d "$filter" \
         '.[] | select(.type | test($d; "i")) | .name' | sort
     fi
@@ -110,6 +131,7 @@ Commands:
 Environment:
   OPENHAB_URL    openHAB URL (required)
   OPENHAB_TOKEN  Long-lived access token (required)
+  HA_CONFIG      Config file path (default: ~/.config/openhab/config.json; env vars win)
 
 Examples:
   oa.sh on LivingRoom_Light

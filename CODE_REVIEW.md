@@ -14,7 +14,7 @@
 
 The skill is small and mostly documentation; the only executable code is `scripts/oa.sh`. The most important issues are that **the deleted token secret is still public via GitHub history** (H4), that **HTTP errors are reported as success** (H1), and that **docs default to plain HTTP for a Bearer-token API** (H2).
 
-Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
+Work-specific tracking (commits, progress) lived in a local notes file (`WORK.md`), which is gitignored and not published.
 
 ---
 
@@ -42,9 +42,9 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 - **Fix:** document `chmod 600 ~/.config/openhab/config.json`; optionally have `oa.sh` warn when the config file is group/world readable.
 
 ### H4. Deleted token secret still recoverable from git history (public repo) — FIXED
-- **File:** commit `875d706` (deletion of tracked `token` file); original in `908adce` (init)
+- **File:** the tracked `token` file (introduced at init, removed when the secret was dropped)
 - **Category:** Security
-- **Status:** Fixed 2026-10-23 — token rotated in openHAB. The old value is still recoverable from history (`git show 908adce:token`) until scrubbed with `git filter-repo` (optional).
+- **Status:** Fixed 2026-10-23 — token rotated in openHAB. History later scrubbed with `git filter-repo --replace-text`: in every commit the old value is replaced by a `REDACTED-ROTATED` placeholder, so it is no longer recoverable from the published history (the pre-rewrite commit hashes cited in earlier revisions of this report no longer exist).
 - **Issue:** The long-lived openHAB access token was committed at init and is still present in the history of `origin/main`. Deleting the file only removes it from HEAD — anyone can recover it with `git show 908adce:token`. The remote (`github.com/sho81/openhab-skill`) answers 200 unauthenticated, i.e. it appears **public**, so the secret should be considered exposed until rotated.
 - **Fix:** rotate now (create a new token in openHAB, update `~/.config/openhab/config.json` / env var); optionally scrub history with `git filter-repo --path token` and force-push if you want it fully gone; add `.gitignore` so local config files don't get re-added (see L7).
 
@@ -76,7 +76,7 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 ### M4. `_meta.json` slug mismatch / registry metadata in git — FIXED
 - **File:** `_meta.json:3`
 - **Category:** Docs / Hygiene
-- **Status:** Fixed 2026-10-23 — slug corrected to `openhab`. Whether `ownerId`/`publishedAt` belong in git is still open (see WORK.md).
+- **Status:** Fixed 2026-10-23 — slug corrected to `openhab`. Later resolved fully: `_meta.json` removed from git and added to `.gitignore` (ClawHub-generated registry state, not source).
 - **Issue:** `"slug": "home-assistant"` while the skill is named `openhab` — likely inherited from an upstream home-assistant skill this repo was forked from. Publishing under the wrong slug can shadow or conflict with another skill. `ownerId`/`publishedAt` are registry state; decide whether they belong in version control at all.
 - **Fix:** set slug to `openhab`; move or regenerate registry metadata as appropriate for your publishing flow.
 
@@ -122,7 +122,7 @@ Work-specific tracking (commits, progress) lives in [WORK.md](WORK.md).
 
 ### L7. Repo hygiene: no LICENSE, no .gitignore — FIXED
 - **File:** repo root
-- **Status:** Fixed 2026-10-23 — added MIT `LICENSE` (© 2026 Sebastian Hornbostel) and `.gitignore` (ignores the old `token` file + OS cruft).
+- **Status:** Fixed 2026-10-23 — added MIT `LICENSE` and `.gitignore` (ignores the old `token` file + OS cruft).
 - **Issue:** No license file for a published skill; no `.gitignore` — the previously tracked `token` secret (see H4) shows how easily local files end up in git.
 
 ### L8. Least-privilege token guidance missing — FIXED

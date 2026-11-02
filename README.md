@@ -1,6 +1,10 @@
 # openHAB Skill for AI Agents
 
-This repository provides a skill for AI agents to control openHAB smart home devices, run automations, and receive webhook events. It supports bidirectional communication via the openHAB REST API (outbound) and webhooks (inbound triggers from openHAB automations).
+This repository provides a skill for AI agents to control openHAB smart home devices and receive webhook events. It supports bidirectional communication via the openHAB REST API (outbound) and webhooks (inbound triggers from openHAB automations).
+
+> **Not supported (yet):** Running openHAB rules/automations. The skill reads and commands Items and reads Thing status; triggering rules via the API is not implemented.
+
+Forked from [ElDuderinos/openhab-skill](https://github.com/ElDuderinos/openhab-skill) by @ElDuderinos — see [LICENSE](LICENSE) for copyright details.
 
 ## Disclaimer
 
